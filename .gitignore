@@ -361,3 +361,15 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Jetbrains IDE
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+Website/tailwindcss.exe
+
+# Old test build directories
+build-test*/
+

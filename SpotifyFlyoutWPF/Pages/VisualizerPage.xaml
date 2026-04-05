@@ -1,0 +1,126 @@
+<Page x:Class="SpotifyFlyoutWPF.Pages.VisualizerPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:MicaWPF.Controls;assembly=MicaWPF"
+      xmlns:viewModels="clr-namespace:SpotifyFlyoutWPF.ViewModels"
+      mc:Ignorable="d"
+      d:DesignHeight="1000" d:DesignWidth="800"
+      Title="VisualizerPage"
+      d:DataContext="{d:DesignInstance viewModels:UserSettings}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      d:Background="White">
+
+    <StackPanel MaxWidth="1000" Margin="16">
+        <TextBlock Text="{DynamicResource TaskbarVisualizerTitle}" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,8" />
+        <TextBlock Text="{DynamicResource TaskbarVisualizerDescription}" FontSize="14" Opacity="0.6" Margin="0,0,0,20" TextWrapping="Wrap" />
+
+        <ui:CardControl Icon="{ui:SymbolIcon SoundWaveCircle24}" Margin="0,0,0,12">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerEnabledTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerEnabledDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <controls:ToggleSwitch IsChecked="{Binding TaskbarVisualizerEnabled, Mode=TwoWay}" />
+        </ui:CardControl>
+
+        <ui:CardControl Icon="{ui:SymbolIcon ArrowMove24}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <TextBlock Text="{DynamicResource TaskbarVisualizerPositionTitle}" FontSize="14" FontWeight="Regular" />
+            </ui:CardControl.Header>
+            <ComboBox SelectedIndex="{Binding TaskbarVisualizerPosition}">
+                <ComboBoxItem Content="{DynamicResource PositionBottomLeft}" />
+                <ComboBoxItem Content="{DynamicResource PositionBottomRight}" />
+            </ComboBox>
+        </ui:CardControl>
+
+        <ui:CardControl Icon="{ui:SymbolIcon DataBarVertical24, Filled=True}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerBarCountTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerBarCountDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <StackPanel Orientation="Horizontal">
+                <Slider Minimum="1" Maximum="20" Value="{Binding TaskbarVisualizerBarCount, Mode=TwoWay}" TickFrequency="1" IsSnapToTickEnabled="True" Width="150" />
+                <ui:TextBlock Text="{Binding TaskbarVisualizerBarCount}" Width="24" TextAlignment="Center" Margin="12,0,0,0" />
+            </StackPanel>
+        </ui:CardControl>
+
+        <ui:CardControl Icon="{ui:SymbolIcon AlignCenterHorizontal24, Filled=True}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerCenteredBarsTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerCenteredBarsDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <controls:ToggleSwitch IsChecked="{Binding TaskbarVisualizerCenteredBars, Mode=TwoWay}" />
+        </ui:CardControl>
+
+        <ui:CardControl Icon="{ui:SymbolIcon LineHorizontal120, Filled=False}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerBaselineTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerBaselineDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <controls:ToggleSwitch IsChecked="{Binding TaskbarVisualizerBaseline, Mode=TwoWay}" />
+        </ui:CardControl>
+
+        <ui:CardControl Icon="{ui:SymbolIcon BezierCurveSquare20, Filled=False}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerAudioSensitivityTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerAudioSensitivityDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <StackPanel Orientation="Horizontal">
+                <ui:SymbolIcon Symbol="Subtract24" Width="24" />
+                <Slider Minimum="1" Maximum="3" Value="{Binding TaskbarVisualizerAudioSensitivity, Mode=TwoWay}" TickFrequency="1" TickPlacement="Both" IsSnapToTickEnabled="True" Width="150" Margin="12,0,12,0" />
+                <ui:SymbolIcon Symbol="Add24" Width="24" />
+            </StackPanel>
+        </ui:CardControl>
+
+        <ui:CardControl Icon="{ui:SymbolIcon ArrowAutofitUp24, Filled=False}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerAudioPeakLevelTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerAudioPeakLevelDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <StackPanel Orientation="Horizontal">
+                <ui:SymbolIcon Symbol="Subtract24" Width="24" />
+                <Slider Minimum="1" Maximum="3" Value="{Binding TaskbarVisualizerAudioPeakLevel, Mode=TwoWay}" TickFrequency="1" TickPlacement="Both" IsSnapToTickEnabled="True" Width="150" Margin="12,0,12,0" />
+                <ui:SymbolIcon Symbol="Add24" Width="24" />
+            </StackPanel>
+        </ui:CardControl>
+
+        <ui:CardControl Icon="{ui:SymbolIcon Speaker224}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock FontSize="14" FontWeight="Regular">
+                        <Hyperlink x:Name="OutputDeviceHyperlink" NavigateUri="ms-settings:apps-volume"
+                               RequestNavigate="OutputDeviceHyperlink_RequestNavigate" TextDecorations="None" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                            <Run Text="{DynamicResource TaskbarVisualizerOutputDeviceTitle}" />
+                            <ui:SymbolIcon FontSize="14" Symbol="ArrowUpRight24" />
+                        </Hyperlink>
+                    </TextBlock>
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerOutputDeviceDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+        </ui:CardControl>
+
+        <ui:CardControl Icon="{ui:SymbolIcon ExpandUpRight24}" Margin="0,0,0,12">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerClickableTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerClickableDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <controls:ToggleSwitch IsChecked="{Binding TaskbarVisualizerClickable, Mode=TwoWay}" />
+        </ui:CardControl>
+    </StackPanel>
+</Page>

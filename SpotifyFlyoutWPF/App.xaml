@@ -1,0 +1,36 @@
+﻿<Application x:Class="SpotifyFlyoutWPF.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SpotifyFlyoutWPF"
+             xmlns:classes="clr-namespace:SpotifyFlyout.Classes"
+             StartupUri="MainWindow.xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:mica="clr-namespace:MicaWPF.Styles;assembly=MicaWPF"
+             xmlns:utils="clr-namespace:SpotifyFlyoutWPF.Classes.Utils"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Unknown"/>
+                <ui:ControlsDictionary />
+                <mica:ThemeDictionary Theme="Auto" DesignModeTheme="Auto"/>
+                <mica:ControlsDictionary />
+                <ResourceDictionary Source="Resources/Styles/CustomSlider.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/CustomToolTip.xaml"/>
+                <!-- default language en-US -->
+                <ResourceDictionary Source="Resources/Localization/Dictionary-en-US.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <FontFamily x:Key="SegoeFluentIcons">pack://application:,,,/;component/Fonts/#Segoe Fluent Icons</FontFamily>
+            
+            <!-- override default background colors -->
+            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+            
+            <!-- XAML utility resources -->
+            <utils:BoolToVisibleCollapsedConverter x:Key="BoolToVisibleCollapsedConverter"/>
+            <utils:BoolToVisibleCollapsedConverter x:Key="BoolToCollapsedVisibleConverter" TrueValue="Collapsed" FalseValue="Visible" />
+            <utils:BoolToEnabledDisabledConverter x:Key="BoolToEnabledDisabledConverter" />
+            <utils:BoolToFullHalfOpacityConverter x:Key="BoolToFullHalfOpacityConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
