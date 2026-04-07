@@ -13,6 +13,7 @@ using SpotifyFlyoutWPF.Windows;
 using MicaWPF.Controls;
 using MicaWPF.Core.Extensions;
 using Microsoft.Win32;
+using NAudio.CoreAudioApi;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -79,6 +80,11 @@ public partial class MainWindow : MicaWindow
     private bool _isHiding = true;
 
     private DateTime _lastSelfUpdateTimestamp = DateTime.MinValue;
+
+    // Volume control
+    private readonly MMDeviceEnumerator _deviceEnumerator = new();
+    private bool _isVolumeSliderDragging;
+    private bool _volumeSliderEnabled = true;
 
     internal TaskbarWindow? taskbarWindow;
 
@@ -812,7 +818,8 @@ public partial class MainWindow : MicaWindow
             _repeatEnabled != SettingsManager.Current.RepeatEnabled ||
             _centerTitleArtist != SettingsManager.Current.CenterTitleArtist ||
             _seekBarEnabled != SettingsManager.Current.SeekbarEnabled ||
-            _alwaysDisplay != SettingsManager.Current.MediaFlyoutAlwaysDisplay)
+            _alwaysDisplay != SettingsManager.Current.MediaFlyoutAlwaysDisplay ||
+            _volumeSliderEnabled != SettingsManager.Current.VolumeSliderEnabled)
             UpdateUILayout();
 
         // sometimes mediaSession.ControlSession can be null
@@ -997,7 +1004,8 @@ public partial class MainWindow : MicaWindow
             extraWidth += SettingsManager.Current.ShuffleEnabled ? 36 : 0;
             extraWidth += 72; // fixed width (Spotify label removed)
 
-            int extraHeight = SettingsManager.Current.SeekbarEnabled && _mediaSessionSupportsSeekbar ? 36 : 0;
+            int extraHeight = SettingsManager.Current.SeekbarEnabled && _mediaSessionSupportsSeekbar ? 26 : 0;
+            extraHeight += SettingsManager.Current.VolumeSliderEnabled ? 26 : 0;
 
             if (SettingsManager.Current.CompactLayout) // compact layout
             {
@@ -1048,6 +1056,21 @@ public partial class MainWindow : MicaWindow
                 SeekbarWrapper.Visibility = Visibility.Visible;
             else
                 SeekbarWrapper.Visibility = Visibility.Collapsed;
+
+            if (SettingsManager.Current.VolumeSliderEnabled)
+            {
+                VolumeWrapper.Visibility = Visibility.Visible;
+                UpdateVolumeUI();
+            }
+            else
+                VolumeWrapper.Visibility = Visibility.Collapsed;
+
+            // Set bottom margin: last visible element gets 12, others get 4
+            bool volumeVisible = SettingsManager.Current.VolumeSliderEnabled;
+            bool seekbarVisible = SettingsManager.Current.SeekbarEnabled && _mediaSessionSupportsSeekbar;
+            
+            SeekbarWrapper.Margin = new Thickness(16, 0, 16, volumeVisible ? 4 : 12);
+            VolumeWrapper.Margin = new Thickness(16, 0, 16, 12);
         });
 
         _layout = SettingsManager.Current.CompactLayout;
@@ -1056,6 +1079,7 @@ public partial class MainWindow : MicaWindow
         _centerTitleArtist = SettingsManager.Current.CenterTitleArtist;
         _seekBarEnabled = SettingsManager.Current.SeekbarEnabled;
         _alwaysDisplay = SettingsManager.Current.MediaFlyoutAlwaysDisplay;
+        _volumeSliderEnabled = SettingsManager.Current.VolumeSliderEnabled;
     }
 
     private async void Back_Click(object sender, RoutedEventArgs e)
@@ -1215,6 +1239,168 @@ public partial class MainWindow : MicaWindow
             _positionTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
     }
+
+    #region Volume Control
+
+    private AudioSessionControl? GetSpotifyAudioSession()
+    {
+        try
+        {
+            var device = _deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+            var sessionManager = device.AudioSessionManager;
+            var sessions = sessionManager.Sessions;
+
+            for (int i = 0; i < sessions.Count; i++)
+            {
+                var session = sessions[i];
+                try
+                {
+                    var processId = (int)session.GetProcessID;
+                    if (processId == 0) continue;
+
+                    var process = Process.GetProcessById(processId);
+                    if (process.ProcessName.Contains("Spotify", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return session;
+                    }
+                }
+                catch { }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Error getting Spotify audio session");
+        }
+        return null;
+    }
+
+    private void UpdateVolumeUI()
+    {
+        if (!SettingsManager.Current.VolumeSliderEnabled) return;
+
+        try
+        {
+            var session = GetSpotifyAudioSession();
+            if (session != null)
+            {
+                var volume = session.SimpleAudioVolume;
+                var volumeLevel = (int)(volume.Volume * 100);
+                var isMuted = volume.Mute;
+
+                Dispatcher.Invoke(() =>
+                {
+                    if (!_isVolumeSliderDragging)
+                    {
+                        VolumeSlider.Value = volumeLevel;
+                    }
+                    VolumePercentage.Text = $"{volumeLevel}%";
+
+                    // Update icon based on volume/mute state
+                    if (isMuted || volumeLevel == 0)
+                        VolumeIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.SpeakerOff20;
+                    else if (volumeLevel < 33)
+                        VolumeIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Speaker020;
+                    else if (volumeLevel < 66)
+                        VolumeIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Speaker120;
+                    else
+                        VolumeIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Speaker220;
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Error updating volume UI");
+        }
+    }
+
+    private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!_isVolumeSliderDragging) return;
+
+        try
+        {
+            var session = GetSpotifyAudioSession();
+            if (session != null)
+            {
+                var volume = session.SimpleAudioVolume;
+                volume.Volume = (float)(e.NewValue / 100.0);
+                if (volume.Mute && e.NewValue > 0)
+                    volume.Mute = false;
+
+                Dispatcher.Invoke(() =>
+                {
+                    VolumePercentage.Text = $"{(int)e.NewValue}%";
+
+                    if (e.NewValue == 0)
+                        VolumeIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.SpeakerOff20;
+                    else if (e.NewValue < 33)
+                        VolumeIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Speaker020;
+                    else if (e.NewValue < 66)
+                        VolumeIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Speaker120;
+                    else
+                        VolumeIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Speaker220;
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Error changing Spotify volume");
+        }
+    }
+
+    private void VolumeSlider_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _isVolumeSliderDragging = true;
+
+        // Handle click-to-seek on volume slider
+        Slider slider = (Slider)sender;
+        System.Windows.Point clickPosition = e.GetPosition(slider);
+        double ratio = clickPosition.X / slider.ActualWidth;
+        ratio = Math.Max(0, Math.Min(1, ratio));
+        double targetValue = ratio * slider.Maximum;
+
+        try
+        {
+            var session = GetSpotifyAudioSession();
+            if (session != null)
+            {
+                var volume = session.SimpleAudioVolume;
+                volume.Volume = (float)(targetValue / 100.0);
+                if (volume.Mute && targetValue > 0)
+                    volume.Mute = false;
+
+                Dispatcher.Invoke(() =>
+                {
+                    VolumeSlider.Value = targetValue;
+                    VolumePercentage.Text = $"{(int)targetValue}%";
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Error setting Spotify volume on click");
+        }
+    }
+
+    private void VolumeIcon_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        try
+        {
+            var session = GetSpotifyAudioSession();
+            if (session != null)
+            {
+                var volume = session.SimpleAudioVolume;
+                volume.Mute = !volume.Mute;
+                UpdateVolumeUI();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Error toggling Spotify mute");
+        }
+    }
+
+    #endregion
 
     private void CleanupResources()
     {

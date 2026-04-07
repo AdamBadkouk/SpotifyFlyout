@@ -206,6 +206,12 @@ public partial class UserSettings : ObservableObject
     public partial bool SeekbarEnabled { get; set; }
 
     /// <summary>
+    /// Show volume slider for Spotify volume control
+    /// </summary>
+    [ObservableProperty]
+    public partial bool VolumeSliderEnabled { get; set; } = true;
+
+    /// <summary>
     /// Pause other media sessions when focusing a new one
     /// </summary>
     [ObservableProperty]

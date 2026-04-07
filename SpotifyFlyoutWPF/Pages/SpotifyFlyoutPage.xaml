@@ -139,6 +139,16 @@
             <controls:ToggleSwitch Name="SeekbarSwitch" IsChecked="{Binding SeekbarEnabled, Mode=TwoWay}" />
         </ui:CardControl>
 
+        <ui:CardControl Icon="{ui:SymbolIcon Speaker220}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource ShowVolumeSliderTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource ShowVolumeSliderDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <controls:ToggleSwitch Name="VolumeSliderSwitch" IsChecked="{Binding VolumeSliderEnabled, Mode=TwoWay}" />
+        </ui:CardControl>
+
         <ui:CardControl Icon="{ui:SymbolIcon SpeakerOff24}" Margin="0,0,0,12">
             <ui:CardControl.Header>
                 <StackPanel Orientation="Vertical">
