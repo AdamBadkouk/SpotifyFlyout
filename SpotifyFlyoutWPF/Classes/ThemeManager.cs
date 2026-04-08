@@ -6,6 +6,7 @@ using SpotifyFlyoutWPF;
 using MicaWPF.Core.Enums;
 using MicaWPF.Core.Helpers;
 using MicaWPF.Core.Services;
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
@@ -18,15 +19,56 @@ namespace SpotifyFlyout.Classes;
 /// </summary>
 internal static class ThemeManager
 {
+    private static bool _isInitialized;
+    private static bool? _lastKnownDarkTheme;
+
     /// <summary>
     /// Applies the theme saved in the application settings. Used at application startup.
     /// </summary>
     /// <inheritdoc cref="ApplyTheme"/>
     public static void ApplySavedTheme()
     {
+        // Subscribe to system theme changes to update tray icon
+        if (!_isInitialized)
+        {
+            SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
+            _isInitialized = true;
+        }
+
         ApplyTheme(SettingsManager.Current.AppTheme);
         UpdateTrayIcon();
         UpdateTaskbarWidget();
+    }
+
+    private static void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+    {
+        if (e.Category == UserPreferenceCategory.General)
+        {
+            // Check if theme actually changed
+            bool currentDark = IsSystemDarkTheme();
+            if (_lastKnownDarkTheme != currentDark)
+            {
+                _lastKnownDarkTheme = currentDark;
+                UpdateTrayIcon();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reads Windows theme directly from registry.
+    /// </summary>
+    private static bool IsSystemDarkTheme()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            var value = key?.GetValue("AppsUseLightTheme");
+            return value is int i && i == 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -104,7 +146,11 @@ internal static class ThemeManager
             {
                 if (SettingsManager.Current.NIconSymbol == true)
                 {
-                    var iconUri = new Uri(WindowsThemeHelper.GetCurrentWindowsTheme() == WindowsTheme.Dark
+                    // Always follow Windows system theme for tray icon
+                    bool isDarkTheme = IsSystemDarkTheme();
+                    _lastKnownDarkTheme = isDarkTheme;
+
+                    var iconUri = new Uri(isDarkTheme
                         ? "pack://application:,,,/Resources/TrayIcons/SpotifyFlyoutWhite.png"
                         : "pack://application:,,,/Resources/TrayIcons/SpotifyFlyoutBlack.png");
                     nIcon.Icon = new BitmapImage(iconUri);
@@ -113,6 +159,13 @@ internal static class ThemeManager
                 {
                     var iconUi = new Uri("pack://application:,,,/Resources/SpotifyFlyout.ico");
                     nIcon.Icon = new BitmapImage(iconUi);
+                }
+
+                // Force tray icon to refresh by re-registering
+                if (!SettingsManager.Current.NIconHide && nIcon.IsRegistered)
+                {
+                    nIcon.Unregister();
+                    nIcon.Register();
                 }
             }
         });

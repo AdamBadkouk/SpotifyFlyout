@@ -42,6 +42,8 @@ hides repeat and shuffle buttons</System:String>
     <System:String x:Key="ShuffleButtonDescription">Increases flyout width</System:String>
     <System:String x:Key="ShowSeekbarTitle">Show Seekbar*</System:String>
     <System:String x:Key="ShowSeekbarDescription">An interactable seekbar to scrub through songs</System:String>
+    <System:String x:Key="ShowVolumeSliderTitle">Show Volume Slider</System:String>
+    <System:String x:Key="ShowVolumeSliderDescription">Control Spotify's volume directly from the flyout</System:String>
     <System:String x:Key="UnsupportedControlsWarning">*Seekbar scrubbing requires Spotify Premium.</System:String>
     <System:String x:Key="PauseOtherMediaTitle">Exclusive Spotify Playback</System:String>
     <System:String x:Key="PauseOtherMediaDescription">Pause other audio sources when Spotify starts playing</System:String>

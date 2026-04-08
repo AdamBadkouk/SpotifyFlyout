@@ -7,6 +7,7 @@ using Microsoft.Win32;
 using NAudio.CoreAudioApi;
 using NAudio.Dsp;
 using NAudio.Wave;
+using SpotifyFlyoutWPF;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -284,6 +285,23 @@ namespace SpotifyFlyoutWPF.Classes
         {
             if (!_isRunning || e.BytesRecorded == 0)
                 return;
+
+            // Only show visualizer when Spotify is actually playing
+            if (!MainWindow.IsSpotifyPlaying())
+            {
+                // Reset bars and hide content when Spotify is not playing
+                if (_barValues != null)
+                {
+                    for (int i = 0; i < _barValues.Length; i++)
+                    {
+                        _barValues[i] = 0;
+                    }
+                }
+                if (!SettingsManager.Current.TaskbarVisualizerBaseline)
+                    SettingsManager.Current.TaskbarVisualizerHasContent = false;
+                UpdateBitmap();
+                return;
+            }
 
             _lastDataAvailableUtc = DateTime.UtcNow;
 
