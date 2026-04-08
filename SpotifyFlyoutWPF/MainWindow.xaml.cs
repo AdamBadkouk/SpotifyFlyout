@@ -23,7 +23,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
+using System.Windows.Threading; 
 using Windows.ApplicationModel;
 using Windows.Media.Control;
 using static SpotifyFlyout.Classes.NativeMethods;
@@ -36,6 +36,9 @@ namespace SpotifyFlyoutWPF;
 public partial class MainWindow : MicaWindow
 {
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
+    // Static instance for access from other classes (e.g., Visualizer)
+    public static MainWindow? Instance { get; private set; }
 
     private int WM_TASKBARCREATED, WM_SHELLHOOK;
 
@@ -55,6 +58,28 @@ public partial class MainWindow : MicaWindow
     {
         return mediaManager.CurrentMediaSessions.Values
             .FirstOrDefault(s => s.Id.Contains("Spotify", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Checks if Spotify is currently playing audio.
+    /// Used by Visualizer to only show content when Spotify is active.
+    /// </summary>
+    public static bool IsSpotifyPlaying()
+    {
+        try
+        {
+            var session = Instance?.mediaManager.CurrentMediaSessions.Values
+                .FirstOrDefault(s => s.Id.Contains("Spotify", StringComparison.OrdinalIgnoreCase));
+            
+            if (session?.ControlSession == null) return false;
+            
+            var playbackInfo = session.ControlSession.GetPlaybackInfo();
+            return playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     // for detecting changes in settings (lazy way)
@@ -92,6 +117,7 @@ public partial class MainWindow : MicaWindow
 
     public MainWindow()
     {
+        Instance = this;
         DataContext = SettingsManager.Current;
         WindowHelper.SetNoActivate(this); // prevents some fullscreen apps from minimizing
         InitializeComponent();
