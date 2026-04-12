@@ -79,6 +79,10 @@ hides repeat and shuffle buttons</System:String>
     <System:String x:Key="TaskbarVisualizerEnabledTitle">Enable Taskbar Visualizer</System:String>
     <System:String x:Key="TaskbarVisualizerEnabledDescription">This feature will only work if the Taskbar Widget is enabled</System:String>
     <System:String x:Key="TaskbarVisualizerPositionTitle">Visualizer Position Relative to Taskbar Widget</System:String>
+    <System:String x:Key="TaskbarVisualizerHideCompletelyTitle">Hide Completely When Spotify Is Closed</System:String>
+    <System:String x:Key="TaskbarVisualizerHideCompletelyDescription">Hides the entire visualizer when Spotify is not running</System:String>
+    <System:String x:Key="TaskbarVisualizerAutoHideTitle">Autohide Visualizer</System:String>
+    <System:String x:Key="TaskbarVisualizerAutoHideDescription">Hides the visualizer automatically when Spotify is paused</System:String>
     <System:String x:Key="TaskbarVisualizerBarCountTitle">Bar Count</System:String>
     <System:String x:Key="TaskbarVisualizerBarCountDescription">The amount of visualizer bars</System:String>
     <System:String x:Key="TaskbarVisualizerCenteredBarsTitle">Centered Bars</System:String>
