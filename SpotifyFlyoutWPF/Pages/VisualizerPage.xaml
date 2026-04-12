@@ -37,6 +37,26 @@
             </ComboBox>
         </ui:CardControl>
 
+        <ui:CardControl Icon="{ui:SymbolIcon EyeOff24}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerHideCompletelyTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerHideCompletelyDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <controls:ToggleSwitch IsChecked="{Binding TaskbarVisualizerHideCompletely, Mode=TwoWay}" />
+        </ui:CardControl>
+
+        <ui:CardControl Icon="{ui:SymbolIcon EyeLines24}" Margin="0,0,0,3">
+            <ui:CardControl.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerAutoHideTitle}" FontSize="14" FontWeight="Regular" />
+                    <TextBlock Text="{DynamicResource TaskbarVisualizerAutoHideDescription}" FontSize="12" Opacity="0.5" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <controls:ToggleSwitch IsChecked="{Binding TaskbarVisualizerAutoHide, Mode=TwoWay}" />
+        </ui:CardControl>
+
         <ui:CardControl Icon="{ui:SymbolIcon DataBarVertical24, Filled=True}" Margin="0,0,0,3">
             <ui:CardControl.Header>
                 <StackPanel Orientation="Vertical">

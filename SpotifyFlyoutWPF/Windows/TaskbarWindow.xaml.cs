@@ -41,6 +41,7 @@ public partial class TaskbarWindow : Window
     
     private GlobalSystemMediaTransportControlsSessionPlaybackStatus? _lastPlaybackStatus;
     private DispatcherTimer? _autoHideTimer;
+    private bool _visualizerVisibleForLayout;
 
     public TaskbarWindow()
     {
@@ -50,6 +51,7 @@ public partial class TaskbarWindow : Window
 
         // Set DataContext for bindings
         DataContext = SettingsManager.Current;
+        _visualizerVisibleForLayout = SettingsManager.Current.TaskbarVisualizerEnabled;
 
         _timer = new DispatcherTimer();
         _timer.Interval = TimeSpan.FromMilliseconds(1500); // slow auto-update for display changes
@@ -433,7 +435,7 @@ public partial class TaskbarWindow : Window
             case 0: // left aligned with some padding (like native widgets)
                 widgetLeft = 20;
 
-                if (SettingsManager.Current.TaskbarVisualizerEnabled && SettingsManager.Current.TaskbarVisualizerPosition == 0)
+                if (_visualizerVisibleForLayout && SettingsManager.Current.TaskbarVisualizerPosition == 0)
                     widgetLeft += (int)(TaskbarVisualizer.Width * dpiScale) + 4;
 
                 if (!SettingsManager.Current.TaskbarWidgetPadding)
@@ -463,7 +465,7 @@ public partial class TaskbarWindow : Window
             case 1: // center of the taskbar
                 widgetLeft = (taskbarRect.Right - taskbarRect.Left - physicalWidth) / 2;
 
-                if (SettingsManager.Current.TaskbarVisualizerEnabled)
+                if (_visualizerVisibleForLayout)
                     if (SettingsManager.Current.TaskbarVisualizerPosition == 0)
                         widgetLeft += (int)(TaskbarVisualizer.Width * dpiScale) / 2 + 4;
                     else
@@ -474,7 +476,7 @@ public partial class TaskbarWindow : Window
             case 2: // right aligned next to system tray with tiny bit of padding
                 try
                 {
-                    if (SettingsManager.Current.TaskbarVisualizerEnabled && SettingsManager.Current.TaskbarVisualizerPosition == 1)
+                    if (_visualizerVisibleForLayout && SettingsManager.Current.TaskbarVisualizerPosition == 1)
                         widgetLeft -= (int)(TaskbarVisualizer.Width * dpiScale) - 4;
 
                     // try to position next to widgets button if enabled
@@ -557,7 +559,7 @@ public partial class TaskbarWindow : Window
 
     private Rect PositionVisualizer(IntPtr taskbarHandle, RECT taskbarRect, double dpiScale, bool isMainTaskbarSelected)
     {
-        if (!SettingsManager.Current.TaskbarVisualizerEnabled)
+        if (!_visualizerVisibleForLayout)
             return Rect.Empty;
 
         int taskbarHeight = taskbarRect.Bottom - taskbarRect.Top;
@@ -582,6 +584,35 @@ public partial class TaskbarWindow : Window
         return new Rect(Canvas.GetLeft(TaskbarVisualizer) * dpiScale, Canvas.GetTop(TaskbarVisualizer) * dpiScale, TaskbarVisualizer.Width * dpiScale, TaskbarVisualizer.Height * dpiScale);
     }
 
+    private static bool IsSpotifyClosed(string title, string artist, GlobalSystemMediaTransportControlsSessionPlaybackStatus? playbackStatus)
+    {
+        return playbackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Closed || (title == "-" && artist == "-");
+    }
+
+    private bool ShouldShowVisualizer(string title, string artist, GlobalSystemMediaTransportControlsSessionPlaybackStatus? playbackStatus)
+    {
+        if (!SettingsManager.Current.TaskbarVisualizerEnabled)
+            return false;
+
+        bool spotifyClosed = IsSpotifyClosed(title, artist, playbackStatus);
+        if (SettingsManager.Current.TaskbarVisualizerHideCompletely && spotifyClosed)
+            return false;
+
+        if (SettingsManager.Current.TaskbarVisualizerAutoHide && playbackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+            return false;
+
+        return true;
+    }
+
+    private void UpdateVisualizerVisibility(string title, string artist, GlobalSystemMediaTransportControlsSessionPlaybackStatus? playbackStatus)
+    {
+        _visualizerVisibleForLayout = ShouldShowVisualizer(title, artist, playbackStatus);
+        Dispatcher.Invoke(() =>
+        {
+            TaskbarVisualizer.Visibility = _visualizerVisibleForLayout ? Visibility.Visible : Visibility.Collapsed;
+        });
+    }
+
     public void UpdateUi(string title, string artist, BitmapImage? icon, GlobalSystemMediaTransportControlsSessionPlaybackStatus? playbackStatus, GlobalSystemMediaTransportControlsSessionPlaybackControls? playbackControls = null)
     {
         // Hide widget if not enabled
@@ -599,6 +630,7 @@ public partial class TaskbarWindow : Window
         
         // Autohide - Widget hides when playback is paused
         _lastPlaybackStatus = playbackStatus;
+        UpdateVisualizerVisibility(title, artist, playbackStatus);
         
         if ((SettingsManager.Current.TaskbarWidgetAutoHide))
         {

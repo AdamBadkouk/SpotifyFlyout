@@ -343,6 +343,18 @@ public partial class UserSettings : ObservableObject
     public partial bool TaskbarVisualizerEnabled { get; set; }
 
     /// <summary>
+    /// Whether the taskbar visualizer should be completely hidden when Spotify is closed.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool TaskbarVisualizerHideCompletely { get; set; }
+
+    /// <summary>
+    /// Whether the taskbar visualizer should be hidden automatically when Spotify is not playing.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool TaskbarVisualizerAutoHide { get; set; }
+
+    /// <summary>
     /// Position of the visualizer, where 0 and 1 are to the left or right of the widget.
     /// </summary>
     [ObservableProperty]
@@ -480,6 +492,8 @@ public partial class UserSettings : ObservableObject
         TaskbarWidgetControlsPosition = 1;
         TaskbarWidgetAnimated = true;
         TaskbarVisualizerEnabled = false;
+        TaskbarVisualizerHideCompletely = false;
+        TaskbarVisualizerAutoHide = false;
         TaskbarVisualizerPosition = 1;
         TaskbarVisualizerClickable = false;
         TaskbarVisualizerBarCount = 10;
@@ -573,6 +587,18 @@ public partial class UserSettings : ObservableObject
     }
 
     partial void OnTaskbarVisualizerPositionChanged(int oldValue, int newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        UpdateTaskbar();
+    }
+
+    partial void OnTaskbarVisualizerHideCompletelyChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        UpdateTaskbar();
+    }
+
+    partial void OnTaskbarVisualizerAutoHideChanged(bool oldValue, bool newValue)
     {
         if (oldValue == newValue || _initializing) return;
         UpdateTaskbar();
