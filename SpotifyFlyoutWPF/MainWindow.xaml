@@ -170,8 +170,10 @@
                     <Slider Name="Seekbar" Value="0" Maximum="100" Minimum="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" VerticalContentAlignment="Center" Height="18" IsMoveToPointEnabled="True" PreviewMouseLeftButtonDown="Seekbar_OnPreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="Seekbar_OnPreviewMouseLeftButtonUp" ValueChanged="Seekbar_OnValueChanged"/>
                 </DockPanel>
                 <DockPanel Grid.Row="2" x:Name="VolumeWrapper" HorizontalAlignment="Stretch" Margin="16,0,16,12" LastChildFill="True" VerticalAlignment="Center">
-                    <ui:SymbolIcon Name="VolumeIcon" Symbol="Speaker220" Filled="True" DockPanel.Dock="Left" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonDown="VolumeIcon_MouseLeftButtonDown"/>
-                    <TextBlock Name="VolumePercentage" Text="100%" Opacity="0.5" FontSize="12" DockPanel.Dock="Right" Width="35" Margin="8,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                    <Border DockPanel.Dock="Left" Width="45" Margin="0,0,2,0" Background="Transparent">
+                        <ui:SymbolIcon Name="VolumeIcon" Symbol="Speaker220" Filled="True" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8,0,0,0" Cursor="Hand" MouseLeftButtonDown="VolumeIcon_MouseLeftButtonDown"/>
+                    </Border>
+                    <TextBlock Name="VolumePercentage" Text="100%" Opacity="0.5" FontSize="12" DockPanel.Dock="Right" Width="45" Margin="2,0,0,0" TextAlignment="Right" VerticalAlignment="Center" Height="18"/>
                     <Slider Name="VolumeSlider" Value="100" Maximum="100" Minimum="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" VerticalContentAlignment="Center" Height="18" IsMoveToPointEnabled="True" ValueChanged="VolumeSlider_ValueChanged" PreviewMouseLeftButtonDown="VolumeSlider_PreviewMouseLeftButtonDown"/>
                 </DockPanel>
             </Grid>
